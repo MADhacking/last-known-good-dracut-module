@@ -1,0 +1,23 @@
+# Hacky rules to try to create /dev/lkg/* links after LVM has been scanned.
+#
+# Copyright 2013, Hacking Networked Solutions Ltd. by Max Hacking
+#
+# based on a previous work
+#
+# Copyright 2008, Red Hat, Inc. by Jeremy Katz <katzj@redhat.com>
+
+SUBSYSTEM!="block", GOTO="lkg_end"
+ACTION!="add|change", GOTO="lkg_end"
+# Also don't process disks that are slated to be a multipath device
+ENV{DM_MULTIPATH_DEVICE_PATH}=="?*", GOTO="lkg_end"
+KERNEL=="dm-[0-9]*", ACTION=="add", GOTO="lkg_end"
+ENV{ID_FS_TYPE}!="LVM?_member", GOTO="lkg_end"
+
+PROGRAM=="/bin/sh -c 'for i in $sys/$devpath/holders/dm-[0-9]*; do [ -e $$i ] && exit 0; done; exit 1;' ", \
+    GOTO="lkg_end"
+
+RUN+="/sbin/initqueue --settled --onetime --unique /sbin/lkg_scan.sh"
+RUN+="/sbin/initqueue --timeout --name 51-kgm_scan --onetime --unique /sbin/lkg_scan.sh"
+RUN+="/bin/sh -c '>/tmp/.lkg_scan-%k;'"
+
+LABEL="lkg_end"
