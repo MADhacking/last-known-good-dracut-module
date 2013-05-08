@@ -12,6 +12,7 @@ depends() {
 
 install() {
 	# Install the following binaries to the initrd.
+	inst sort
 	inst xargs
 	inst lvm
 	inst lvs
@@ -28,7 +29,12 @@ install() {
 	inst_rules "$moddir/65-lkg.rules"
 
 	# The lkg_candidate.sh script uses lkg_mklv.sh to
-	# create lkg candidate volume snapshots.
+	# create LKG candidate snapshots UNLESS we are
+	# booting from an LKG snapshot.
 	inst_script "$moddir/lkg_mklv.sh" /sbin/lkg_mklv.sh
 	inst_hook pre-mount 99 "$moddir/lkg_candidate.sh"
+	
+	# The lkg_snapselect.sh script uses  ONLY when we
+	# are booting from an LKG snapshot.
+	inst_hook pre-mount 99 "$moddir/lkg_snapselect.sh"
 }

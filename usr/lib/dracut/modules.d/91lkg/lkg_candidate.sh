@@ -1,6 +1,10 @@
 #! /bin/sh
 
-info "Last Known Good (LKG) [phase 2]"
+# If there is an LKG_BOOT_SNAPSHOT variable defined then
+# we don't need to run so just return.
+[ -n ${LKG_BOOT_SNAPSHOT} ] && return
+
+info "Last Known Good (LKG) [phase 2] - Creating LKG candidate snapshots"
 
 # Remove any existing snapshot candidates. >/dev/null
 info "    removing stale candidate snapshots"
