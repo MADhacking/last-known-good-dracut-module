@@ -2,7 +2,7 @@
 
 # ${1} lv_name
 # ${2} lv_size
-# ${3} pv_name
+# ${3} vg_name
 
 # Create the symbolic link.
 mkdir -p "/dev/lkg/${3}"

@@ -12,6 +12,12 @@ depends() {
 
 install() {
 	# Install the following binaries to the initrd.
+	dracut_install -o getfacl
+	dracut_install -o setfacl
+	dracut_install -o getfattr
+	dracut_install -o setfattr
+	inst grep
+	inst rsync
 	inst sort
 	inst xargs
 	inst lvm
@@ -19,6 +25,10 @@ install() {
 	inst lvcreate
 	inst lvremove
 	inst lvchange
+
+	# We want to be able to parse the kernel command
+	# line so we register a hook for it.
+	inst_hook cmdline 90 "$moddir/lkg_cmd_parse.sh"
 
 	# The 65-lkg.rules file installs UDEV rules to call
 	# lkg_scan.sh after block devices (and LVM) should
@@ -28,13 +38,15 @@ install() {
 	inst_script "$moddir/lkg_scan.sh" /sbin/lkg_scan.sh
 	inst_rules "$moddir/65-lkg.rules"
 
-	# The lkg_candidate.sh script uses lkg_mklv.sh to
-	# create LKG candidate snapshots UNLESS we are
+	# The lkg_candidate.sh script uses lkg_mk_snaplv.sh
+	# to create LKG candidate snapshots UNLESS we are
 	# booting from an LKG snapshot.
-	inst_script "$moddir/lkg_mklv.sh" /sbin/lkg_mklv.sh
+	inst_script "$moddir/lkg_mk_snap_lv.sh" /sbin/lkg_mk_snap_lv.sh
 	inst_hook pre-mount 99 "$moddir/lkg_candidate.sh"
 	
-	# The lkg_snapselect.sh script uses  ONLY when we
-	# are booting from an LKG snapshot.
+	# The lkg_snapselect.sh script uses lkg_mk_copy_lv.sh
+	# to create LKG active snapshots ONLY when we are
+	# booting from an LKG snapshot.
+	inst_script "$moddir/lkg_mk_copy_lv.sh" /sbin/lkg_mk_copy_lv.sh
 	inst_hook pre-mount 99 "$moddir/lkg_snapselect.sh"
 }
