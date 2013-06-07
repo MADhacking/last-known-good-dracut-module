@@ -5,6 +5,12 @@
 
 info "Last Known Good (LKG) [phase 2] - Creating LKG candidate snapshots"
 
+# If an LVM config file exists we need to ensure that 
+# read-write locking is enabled.
+if [ -e ${initdir}/etc/lvm/lvm.conf ]; then
+    sed -i -e 's/\(^[[:space:]]*\)locking_type[[:space:]]*=[[:space:]]*[[:digit:]]/\1locking_type =  1/' ${initdir}/etc/lvm/lvm.conf
+fi
+
 # Remove any existing snapshot candidates.
 info "    removing stale candidate snapshots"
 lvremove --force --noudevsync @lkg_candidate 2>&1 | vinfo
